@@ -1,0 +1,14 @@
+use adventureworks2014;
+SELECT FirstName,MiddleName,LastName,BusinessEntityID from Person   WHERE  MiddleName  Like 'J%' AND LastName Like "%Alexander%"  OR  MiddleName Like 'J%' AND LastName Like "%Zhang%";
+SELECT ProductID,Name,Size,Color from Product WHERE Size IS NULL  OR Color IS NULL;
+SELECT 'product info' as '', count(ProductID) , round(avg(size),0) from Product  WHERE COLOR IS NOT NULL AND SIZE IS NOT NULL AND SIZE NOT IN ('M','L','XL','S');
+SELECT CONCAT_WS('',FirstName,MiddleName,LastName)  AS FullName from Person WHERE LastName REGEXP '^V' OR  LastName REGEXP  '^W' ORDER BY LastName DESC;
+SELECT CONCAT_WS(BusinessEntityID,' ',FirstName, IF(ISNULL(MiddleName),'',CONCAT(' ',MiddleName)),'',LastName) AS Name from Person WHERE CAST(LastName AS BINARY) REGEXP BINARY '^[VW]' ORDER BY BusinessEntityID ASC;
+SELECT DISTINCT FirstName  From Person  WHERE FirstName  = REVERSE (FirstName);
+SELECT SUBSTRING(EmailAddress,LOCATE('@',EmailAddress) + 1) AS DomainName FROM ProductReview;
+SELECT  DISTINCT Jobtitle from employee ORDER BY  Jobtitle ASC;
+SELECT FirstName from Person WHERE FirstName Like '%K%';
+SELECT SalesPersonID,AVG(TotalDue) AS AverageOrderValue from SalesOrderHeader WHERE SalesPersonId IS NOT NULL  GROUP BY SalesPersonID HAVING COUNT(SalesOrderID) > 50;
+SELECT YEAR(OrderDATE) AS YEAR , QUARTER(OrderDate) AS QUARTER, COUNT(SalesOrderNumber) AS TotalOrder FROM SalesOrderHeader GROUP BY YEAR(OrderDate), QUARTER(OrderDATE) ORDER BY YEAR ASC ,  QUARTER;
+SELECT MONTH(OrderDATE) AS MAAND , concat(count(TotalDue)) as TotalOrder from salesorderheader GROUP BY MONTH(OrderDate) ORDER BY MAAND ASC;
+SELECT CustomerID, YEAR(OrderDATE) AS JAAR , concat(sum(TotalDue)) as TotalOrder from Salesorderheader GROUP BY CustomerID ,YEAR(OrderDate) ORDER BY  CustomerID ASC;
