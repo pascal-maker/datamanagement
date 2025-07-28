@@ -1,4 +1,4 @@
-
+#Exercise1
 SELECT ProductNumber,ProductName,PricePerUnit,Stock,PricePerUnit, concat(Stock ,'pieces'),concat (PricePerUnit*Stock,'€') AS 'Stockvalue' from tblproducts;
 #Exercise2
 SELECT ProductNumber,ProductName,PricePerUnit AS 'Purchaseprice', concat (PricePerUnit * 1.15) AS 'SellingPrice', concat((PricePerUnit * 1.15) - PricePerUnit,'€') AS 'Profit'
