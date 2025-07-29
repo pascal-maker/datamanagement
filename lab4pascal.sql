@@ -1,14 +1,18 @@
-USE artemis;
-USE northwind;
 
+USE northwind;
+#Exercise1
 SELECT p.ProductName as 'Product Name', c.CategoryName as ' Category Name' from tblproducts p JOIN tblcategories c ON p.CategoryNumber = c.CategoryNumber;
 #ex2
 select o.OrderID as 'Order Id ', c.Name as 'Name' from tblcustomers c join tblorders o  on c.CustomerId = o.customernumber;
 #ex3
 
-SELECT p.ProductName as 'Product Name' , s.Company as 'Company' from tblproducts p JOIN tblsuppliers s ON p.CategoryNumber = s.SupplierId;
+select p.productname, s.company 
+from tblproducts p
+join tblsuppliers s
+on p.suppliernumber = s.supplierid;
 #ex4
-SELECT c.CategoryName AS 'Category Name', p.ProductName AS 'Product Name', p.Stock - p.OnOrder AS 'Decifit ' FROM tblcategories c JOIN tblproducts p  ON c.CategoryNumber = p.CategoryNumber WHERE p.Stock < p.OnOrder ORDER BY c.CategoryName;
+SELECT c.CategoryName AS 'Category Name', p.ProductName AS 'Product Name', p.Stock - p.OnOrder AS 'Decifit ' FROM tblcategories c 
+JOIN tblproducts p  ON c.CategoryNumber = p.CategoryNumber WHERE p.Stock < p.OnOrder ORDER BY c.CategoryName;
 #ex5
 SELECT e.EmployeeID,Sum((oi.Quantity * p.PricePerUnit) -  (oi.Discount * oi.Quantity * p.PricePerUnit)) as TotalSales  FROM tblemployees e 
 JOIN tblorders o ON e.EmployeeID = o.EmployeeID join tblorderinformation oi ON o.OrderId = oi.OrderId  JOIN tblproducts p 
@@ -160,4 +164,6 @@ WHERE
 GROUP BY 
     o.id, order_month, od.product_id, p.product_name, od.quantity
 ORDER BY 
-    od.quantity DESC;
+  SUM(od.unit_price * od.quantity * (1 - od.discount)) desc;
+
+
