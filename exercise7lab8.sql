@@ -1,0 +1,66 @@
+DROP DATABASE IF EXISTS concert;
+CREATE DATABASE concert ;
+USE concert;
+
+-- Table :Customers
+CREATE TABLE Customer(
+CustomerID INT PRIMARY KEY AUTO_INCREMENT,
+Name VARCHAR(100),
+Address  VARCHAR(100),
+EmailAddress VARCHAR(100),
+  PhoneNumber VARCHAR(15)
+);
+
+
+CREATE TABLE Concert(
+ConcertID INT PRIMARY KEY AUTO_INCREMENT,
+ConcertName VARCHAR(100),
+ConcertDate DATE,
+ConcertTime TIME,
+ConcertLocation VARCHAR(100),
+ConcertPrice DECIMAL(10,2)
+
+
+
+);
+
+
+
+CREATE TABLE Events(
+EventsID INT PRIMARY KEY AUTO_INCREMENT,
+EventsName VARCHAR(100),
+EventsDate DATE,
+EventsTime TIME,
+EventsLocation VARCHAR(100),
+EventsPrice DECIMAL(10,2)
+
+
+
+);
+
+
+
+CREATE TABLE Newsletter(
+NewsletterID INT PRIMARY KEY AUTO_INCREMENT,
+CustomerID INT,
+WantsNewsletter BOOLEAN DEFAULT FALSE,
+FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE
+
+
+
+);
+
+CREATE TABLE Tickets(
+TicketID INT PRIMARY KEY AUTO_INCREMENT,
+ConcertID INT,
+CustomerID INT,
+TicketPrice DECIMAL(10,2),
+FOREIGN KEY (ConcertID) REFERENCES Concert(ConcertID) ON DELETE CASCADE,
+FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE
+
+
+
+);
+
+
+
