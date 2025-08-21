@@ -1,117 +1,266 @@
+#oefening1
+SELECT CustomerId, Name, Address, CONCAT(zipcode, city) AS 'Zipcode & City'
+FROM tblcustomers;
+-- ➝ Haalt klantgegevens op (ID, naam, adres) en plakt postcode + stad samen.
 
-  #Exercise01
-  select CustomerId,Name,Address,City,Zipcode, concat (Zipcode,'', City) AS 'Zipcode&City' from tblcustomers;
-  #Exercise2
-  select CustomerId,Name,Address,City,Zipcode, concat(Zipcode,'',City) AS 'Zipcode&City'from tblcustomers where Balance >= 150 AND Balance <= 300 ORDER BY Balance DESC;
-  #Exercise03
-  select LastName,FirstName,BirthDate from tblemployees where Month (BirthDate)  BETWEEN  07 AND 08;
-  #Exercise04
-  select LastName,FirstName,BirthDate from tblemployees where Month (BirthDate)   NOT BETWEEN  07 AND 08;
-  #Exercise05
-  select LastName,FirstName,BirthDate from tblemployees where BirthDate > '1960-01-01' AND  BirthDate < '1966-01-27' ORDER BY BirthDate;
-  #Exercise06
-  select Name,City from tblcustomers where City = "Leuven" OR City = "Herent" OR City = "Kessel-Lo" OR City = "Heverlee";
-  #Exercise07
-select Name,City from tblcustomers where City  NOT IN ('Leuven','Herent','Kessel-Lo','Heverlee');
+#oefening2
+SELECT CustomerId, Name, Address, CONCAT(zipcode, city) AS 'Zipcode & City'
+FROM tblcustomers
+WHERE Balance BETWEEN 150 AND 300;
+-- ➝ Zelfde als oefening1, maar toont alleen klanten met een balans tussen 150 en 300.
+
+#oefening3
+SELECT BirthDate
+FROM tblemployees
+WHERE MONTH(BirthDate) BETWEEN 07 AND 08;
+-- ➝ Toont geboortedata van werknemers geboren in juli of augustus.
+
+#oefening4
+SELECT BirthDate
+FROM tblemployees
+WHERE MONTH(BirthDate) NOT BETWEEN 07 AND 08;
+-- ➝ Toont geboortedata van werknemers geboren in andere maanden.
+
+#Exercise05
+SELECT BirthDate
+FROM tblemployees
+WHERE BirthDate BETWEEN '1960-01-01' AND '1966-01-27';
+-- ➝ Toont werknemers geboren tussen 1 jan 1960 en 27 jan 1966.
+
+#Exercise06
+SELECT CustomerId, Name, City
+FROM tblcustomers
+WHERE City = 'Leuven' OR City = 'Herent' OR City = 'Kessel-Lo' OR City = 'Heverlee';
+-- ➝ Haalt klanten op die wonen in Leuven, Herent, Kessel-Lo of Heverlee.
+
+#Exercise07
+SELECT CustomerId, Name, City
+FROM tblcustomers
+WHERE City != 'Leuven' AND City != 'Herent' AND City != 'Kessel-Lo' AND City != 'Heverlee';
+-- ➝ Haalt klanten op die NIET uit Leuven, Herent, Kessel-Lo of Heverlee komen.
+
 #Exercise08
-select NederlandseNaam,ProductName,CategoryNumber,concat(NederlandseNaam,(ProductName),CategoryNumber)from tblproducts  where CategoryNumber = 1 OR CategoryNumber = 2 OR CategoryNumber = 3 OR CategoryNumber = 4  OR CategoryNumber = 8  ORDER BY CategoryNumber AND NederlandseNaam;
+SELECT CONCAT(NederlandseNaam, '(', ProductName, ') ') AS `Naam (Product)`, CategoryNumber
+FROM tblproducts
+WHERE CategoryNumber IN (1,2,3,4,8)
+ORDER BY CategoryNumber, NederlandseNaam;
+-- ➝ Combineert Nederlandse en Engelse productnaam voor geselecteerde categorieën.
+
 #Exercise09
-select NederlandseNaam,ProductName,CategoryNumber ,concat(NederlandseNaam,(ProductName),CategoryNumber)from tblproducts 
- where  ProductName LIKE '%Louisiana%'AND (CategoryNumber = 1 OR CategoryNumber = 2 OR CategoryNumber = 3 OR CategoryNumber = 4  
- OR CategoryNumber = 8)  ORDER BY CategoryNumber,
- NederlandseNaam;
- #Exercise10
-select ProductName,QuantityPerUnit from tblproducts where QuantityPerUnit  LIKE "%bottles%" or 
- QuantityPerUnit LIKE "%boxes%"  or QuantityPerUnit LIKE "%bottle";
- #Exercise11
-select ProductName,QuantityPerUnit,PricePerUnit from tblproducts where PricePerUnit >= 0 AND PricePerUnit <= 32 
- AND QuantityPerUnit  LIKE "%bottles%" or  QuantityPerUnit 
-LIKE "%boxes%"  or QuantityPerUnit LIKE "%bottle" ORDER BY PricePerUnit DESC;
+SELECT ProductName
+FROM tblproducts
+WHERE ProductName LIKE '%Louisiana%';
+-- ➝ Zoekt producten met "Louisiana" in de naam.
+
+#Exercise10
+SELECT QuantityPerUnit
+FROM tblproducts
+WHERE QuantityPerUnit LIKE '%Boxes%'
+   OR QuantityPerUnit LIKE '%Bottles%'
+   OR QuantityPerUnit LIKE '%Bottle%';
+-- ➝ Toont producten waarvan de verpakking "boxes" of "bottle(s)" bevat.
+
+#Exercise11
+SELECT ProductName, QuantityPerUnit, PricePerUnit
+FROM tblproducts
+WHERE PricePerUnit < 32
+ORDER BY PricePerUnit DESC;
+-- ➝ Geeft producten goedkoper dan 32, gesorteerd van duur naar goedkoop.
+
 #Exercise12
-select Name ,City , concat (Name, 'from',City) from  tblcustomers  where Name LIKE "%Vander%";
+SELECT CONCAT(Name, ' from ', City) AS 'Customer Name'
+FROM tblcustomers
+WHERE Name LIKE '%Vander%';
+-- ➝ Toont klantnaam + stad, enkel klanten met "Vander" in hun naam.
+
 #Exercise13
-select Name ,City , concat (Name, 'from',City) from  tblcustomers  where Name LIKE 'Vander%t';
+SELECT Name
+FROM tblcustomers
+WHERE NAME LIKE 'Vander%t';
+-- ➝ Klantennamen die beginnen met "Vander" en eindigen op "t".
+
 #Exercise14
-select Name ,City , Address, concat (Name, 'from',City) from  tblcustomers  where Address LIKE "%dorp%";
+SELECT Name AS 'Customer name', Address
+FROM tblcustomers
+WHERE Address LIKE '%Dorp%';
+-- ➝ Toont klanten die in een adres met "Dorp" wonen.
+
 #Exercise15
-select Company from tblsuppliers where Company LIKE "%an%"  or Company LIKE "%foot%";
+SELECT Company
+FROM tblsuppliers
+WHERE Company LIKE '%foot%' OR Company LIKE '%an%';
+-- ➝ Toont leveranciers met "foot" of "an" in hun bedrijfsnaam.
+
 #Exercise16
-select ProductName from tblproducts where ProductName  regexp '^chef' AND ProductName regexp 'mix$';
+SELECT ProductName
+FROM tblproducts
+WHERE ProductName REGEXP '^chef' AND ProductName REGEXP 'mix$';
+-- ➝ Zoekt producten waarvan de naam begint met "chef" en eindigt op "mix".
+
 #Exercise17
-select ProductName FROM tblproducts WHERE BINARY   ProductName  LIKE '%c%' AND BINARY ProductName NOT LIKE '%C%' ORDER  BY ProductName;
-#Exercise17
-SELECT ProductName 
-FROM tblproducts 
-WHERE 
-    (
-        (BINARY ProductName LIKE '%c%')
-        OR 
-        (BINARY ProductName LIKE '%y%')
-        OR 
-        (BINARY ProductName LIKE '%B%')
-    )
-    AND BINARY ProductName NOT LIKE '%C%'
-    AND BINARY ProductName NOT LIKE '%Y%'
+SELECT ProductName
+FROM tblproducts
+WHERE ProductName COLLATE utf8mb4_bin REGEXP 'c'
 ORDER BY ProductName;
+-- ➝ Case-sensitive: toont producten met een kleine letter "c" in de naam.
+
+#Exercise18
+SELECT ProductName
+FROM tblproducts
+WHERE ProductName COLLATE utf8mb4_bin REGEXP 'c'
+   OR ProductName COLLATE utf8mb4_bin REGEXP 'y'
+   OR ProductName COLLATE utf8mb4_bin REGEXP 'B'
+ORDER BY ProductName;
+-- ➝ Case-sensitive: toont producten die 'c', 'y' of 'B' bevatten.
+
 #Exercise19
-select Name,Balance  from tblcustomers WHERE LENGTH(CAST(Balance AS CHAR)) = 4;
+SELECT Balance, Name
+FROM tblcustomers
+WHERE Balance COLLATE utf8mb4_bin REGEXP '^[^\s]{4}$';
+-- ➝ Klanten waarvan Balance exact 4 tekens lang is (zonder spaties).
+
 #Exercise20
-select TaxPercentage from tbltaxrate WHERE TaxPercentage REGEXP '^[0-9]+\\.[0-9]{2}$';
-select TaxPercentage from tbltaxrate WHERE TaxPercentage NOT REGEXP '^[0-9]+\\.[0-9]{2}$';
+SELECT TaxPercentage
+FROM tbltaxrate
+WHERE TaxPercentage COLLATE utf8mb4_bin REGEXP '^0\\.[0-9]{2}$';
+-- ➝ Toont belastingpercentages in de vorm 0.xx (bvb. 0.05).
+
 #Exercise21
-select Name,City,Type from tblcustomers where Type = 'T' OR Type = 'W'  ORDER BY Type  ASC ;
+SELECT City, Name, Type
+FROM tblcustomers
+WHERE Type IN ('T','W')
+ORDER BY Type, Name;
+-- ➝ Klanten met type T of W, alfabetisch gesorteerd per type en naam.
+
 #Exercise22
-select Name,City,Type from tblcustomers where Type = 'T' OR Type = 'W'  ORDER BY (Type = 'T') DESC,    NAME ASC ;
+SELECT City, Name, Type
+FROM tblcustomers
+WHERE Type IN ('T','W')
+ORDER BY Type = 'T' DESC, Name;
+-- ➝ Zelfde klanten, maar sorteert eerst Type T boven W.
+
 #Exercise23
-SELECT BALANCE as '€ Debts', CustomerId,City from tblcustomers WHERE Balance IS NOT NULL AND Balance != 0 ORDER BY Balance DESC;
+SELECT CONCAT(Balance ,' €') AS 'Debts', CustomerId, City
+FROM tblcustomers
+ORDER BY Balance DESC;
+-- ➝ Toont schulden van klanten (met € erbij), gesorteerd van hoog naar laag.
+
 #Exercise24
-select  concat ( FirstName,LastName) as Name,BirthDate  from tblemployees  ORDER BY BirthDate  ASC;
+SELECT CONCAT(LastName, ' ', FirstName) AS 'Name', BirthDate
+FROM tblemployees
+ORDER BY BirthDate ASC;
+-- ➝ Volledige naam + geboortedatum, gesorteerd van oudste naar jongste.
+
 #Exercise25
-select FirstName,LastName,City , Employed from tblemployees where Employed LIKE '%1993%';
+SELECT LastName, FirstName, City, Employed
+FROM tblemployees
+WHERE Employed BETWEEN "1993-01-01" AND "1993-12-12"
+ORDER BY Employed DESC;
+-- ➝ Werknemers die in 1993 in dienst kwamen.
+
 #Exercise26
-select Name,City from tblcustomers  where City LIKE '%Leuven%' ORDER BY Name ASC;
+SELECT Name, City
+FROM tblcustomers
+WHERE City = "Leuven"
+ORDER BY Name ASC;
+-- ➝ Alle klanten uit Leuven.
+
 #Exercise27
-select FirstName,LastName ,City, Gender from tblemployees where City LIKE '%Leuven%' AND Gender = 2;
+SELECT LastName, FirstName, City, Gender
+FROM tblemployees
+WHERE City = "Leuven";
+-- ➝ Werknemers die in Leuven wonen.
+
 #Exercise28
-select FirstName,LastName ,City, Gender from tblemployees where City  NOT LIKE '%Leuven%' '%Kessel-lo%' '%Herent%'  AND Gender = 1;
+SELECT LastName, FirstName, City, Gender
+FROM tblemployees
+WHERE City NOT IN ("Leuven","Kessel-lo","Herent") AND Gender = 1;
+-- ➝ Mannen (Gender=1) die NIET in Leuven, Kessel-Lo of Herent wonen.
+
 #Exercise29
-select Name,Balance,CustomerId from tblcustomers where Balance > 175  ORDER BY Name ASC;
+SELECT CustomerID, Name, Balance
+FROM tblcustomers
+WHERE Balance > 175
+ORDER BY Name ASC;
+-- ➝ Klanten met saldo > 175, gesorteerd op naam.
+
 #Exercise30
-select CustomerId,Name from tblcustomers where Name regexp '^Van';
+SELECT CustomerID, Name
+FROM tblcustomers
+WHERE Name REGEXP '^Van'
+ORDER BY Name ASC;
+-- ➝ Klanten waarvan de naam begint met "Van".
+
 #Exercise31
-select JobTitle, UPPER(City) AS City, UPPER(LastName) AS LastName from tblemployees WHERE  Jobtitle = 'Representative' AND
- City not in ('Leuven','Kessel-lo','Herent','Genk');
+SELECT UPPER(LastName) AS LastName,
+       UPPER(City) AS City,
+       JobTitle
+FROM tblemployees
+WHERE City NOT IN ("Leuven","Herent","Peer","Genk")
+  AND Jobtitle = 'Representative';
+-- ➝ Representatives buiten Leuven, Herent, Peer en Genk.
+--   Namen en steden worden in hoofdletters weergegeven.
+
 #Exercise32
-select ProductName,Stock,OnOrder,Shop,(Shop - ( Stock - OnOrder)) AS Shortage from tblproducts WHERE 
-( Stock - OnOrder) < Shop ORDER BY Shortage DESC;
+SELECT ProductName, Stock, OnOrder, Shop,
+       (Shop - (Stock - OnOrder)) AS Shortage
+FROM tblproducts
+WHERE (Stock - OnOrder) < Shop
+ORDER BY Shortage DESC;
+-- ➝ Berekent tekorten in voorraad. 
+--   Shortage = benodigde voorraad - beschikbare voorraad.
+
 #Exercise33
-select Company,Country from tblsuppliers where Country NOT In ('spain' ,'United Kingdom')  
- ORDER BY Company AND Country ASC LIMIT 5 ;
- #Exercise34
-select DISTINCT Country from tblsuppliers  ORDER BY Country ASC;
+SELECT CONCAT(Company, ' from ', Country) AS 'Company And Country'
+FROM tblsuppliers
+WHERE Country NOT IN ('Spain','United Kingdom')
+LIMIT 5;
+-- ➝ Toont leveranciers met land, behalve Spanje en VK. Beperkt tot 5 rijen.
+
+#Exercise34
+SELECT DISTINCT Country
+FROM tblsuppliers
+ORDER BY Country ASC;
+-- ➝ Geeft unieke landen van leveranciers, alfabetisch.
+
 #Exercise35
-select sum(balance) as Balance, count(RegistrationNumber) as NumberOfCustomers from tblcustomers 
-where RegistrationNumber is not null; 
+SELECT SUM(balance) AS Balance,
+       COUNT(RegistrationNumber) AS NumberOfCustomers
+FROM tblcustomers
+WHERE RegistrationNumber IS NOT NULL;
+-- ➝ Totale balans en aantal klanten met registratienummer.
+
 #Exercise36
-SELECT COUNT(OrderId) AS Orders FROM tblorders WHERE OrderDate >= '2006-08-06 ' AND   OrderDate < '2006-08-07';
+SELECT CustomerNumber, OrderDate
+FROM tblorders
+WHERE OrderDate >= '2006-08-06' AND OrderDate < '2006-08-07';
+-- ➝ Orders geplaatst op exact 6 augustus 2006.
+
 #Exercise37
-SELECT AVG(PricePerUnit *1.1) as AveragePriceWithIncrease from tblproducts;
+SELECT AVG(PricePerUnit * 1.10) AS Increase
+FROM tblproducts;
+-- ➝ Berekent gemiddelde prijs per product als alle prijzen met 10% stijgen.
+
 #Exercise38
-SELECT JoBTitle = "Representative" from tblemployees where Employed  <= '1993-01-01';
-#Exercise38
-SELECT COUNT(*) AS NUMberOfRepresentatives from tblemployees WHERE JobTitle = 'Representative' AND Employed <= '1993-01-01';
+SELECT COUNT(*) AS NumberOfRepresentatives
+FROM tblemployees
+WHERE JobTitle = 'Representative'
+  AND Employed <= '1993-01-01';
+-- ➝ Telt alle vertegenwoordigers die al vóór 1993 in dienst waren.
+
 #Exercise39
-SELECT YEAR(MAX(BirthDate)) - YEAR(MIN(BirthDate))  AS agegapemployee  from tblemployees WHERE City Like '%Leuven%';
+SELECT City, YEAR(MAX(BirthDate)) - YEAR(MIN(BirthDate))
+FROM tblemployees
+WHERE City = "Leuven";
+-- ➝ Verschil in geboortejaar tussen jongste en oudste werknemer in Leuven.
+
 #Exercise40
-SELECT COUNT(OrderId) AS Orders from tblorders WHERE OrderDate >= '2005-01-01' AND OrderDate < '2005-12-31';
-
-
-
-
-
-
-
-
+SELECT YEAR(OrderDate) AS OrderYear,
+       COUNT(OrderID) AS NumberOfOrders
+FROM tblorders
+WHERE YEAR(OrderDate) = 2005
+GROUP BY YEAR(OrderDate);
+-- ➝ Telt alle orders per jaar, maar gefilterd enkel op jaar 2005.
 
 
 
