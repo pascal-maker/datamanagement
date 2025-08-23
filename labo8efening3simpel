@@ -1,0 +1,45 @@
+USE pond;
+
+CREATE TABLE Sensor (
+  SensorID INT AUTO_INCREMENT PRIMARY KEY,  
+  SensorName VARCHAR(100) NOT NULL ,
+  Unit VARCHAR(20)
+);
+
+
+CREATE TABLE SensorLog (
+  LogID INT AUTO_INCREMENT PRIMARY KEY,
+  SensorID INT,
+  Value Decimal,
+  MeasuredAt DATETIME,
+  
+    FOREIGN KEY (SensorID) REFERENCES Sensor(SensorID)
+    ON DELETE RESTRICT ON UPDATE RESTRICT    
+  
+  
+);
+
+
+
+
+
+CREATE TABLE Actuator (
+  ActuatorID INT AUTO_INCREMENT PRIMARY KEY,       
+  ActuatorName VARCHAR(200) NOT NULL,    
+  Description VARCHAR(20)
+  
+);
+
+
+CREATE TABLE ActuatorLog (
+  LogID INT AUTO_INCREMENT PRIMARY KEY,
+  ActuatorID INT,
+  Action VARCHAR(60),
+  ExcutedAt DATETIME,
+  
+    FOREIGN KEY (ActuatorID) REFERENCES Actuator(ActuatorID)
+    ON DELETE RESTRICT ON UPDATE RESTRICT   
+  
+  
+);
+
