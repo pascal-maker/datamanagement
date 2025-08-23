@@ -7,6 +7,20 @@ USE mylibrary;
 -- --------------------------------------------------
 -- STEP 2: Create tables in correct order
 -- --------------------------------------------------
+-- ⚡ Why does order matter?
+-- Parent tables (those referenced by foreign keys) must be created first.
+-- Otherwise MySQL will throw: "Error Code: 1215. Cannot add foreign key constraint".
+-- So we build in a logical dependency chain:
+--   Publisher   → Book ← Language
+--   Address     → Author
+--   Book + Author → BookAuthor
+-- Correct order:
+-- 1. Publisher
+-- 2. Language
+-- 3. Book
+-- 4. Address
+-- 5. Author
+-- 6. BookAuthor
 
 -- Publisher table
 CREATE TABLE Publisher (
@@ -20,7 +34,7 @@ CREATE TABLE Language (
   LanguageName VARCHAR(50) NOT NULL            -- e.g. English, Dutch
 );
 
--- Book table (references Publisher + Language)
+-- Book table (depends on Publisher + Language, so created after them)
 CREATE TABLE Book (
   BookID INT AUTO_INCREMENT PRIMARY KEY,       -- unique ID for each book
   Title VARCHAR(200) NOT NULL,                 -- title of the book
@@ -32,14 +46,14 @@ CREATE TABLE Book (
     ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
--- Address table for Authors
+-- Address table (independent, needed before Author)
 CREATE TABLE Address (
   AddressID INT AUTO_INCREMENT PRIMARY KEY,    -- unique ID
   City VARCHAR(100),
   Country VARCHAR(100)
 );
 
--- Author table (references Address)
+-- Author table (depends on Address)
 CREATE TABLE Author (
   AuthorID INT AUTO_INCREMENT PRIMARY KEY,
   FirstName VARCHAR(100),
@@ -50,7 +64,7 @@ CREATE TABLE Author (
     ON DELETE RESTRICT ON UPDATE RESTRICT
 );
 
--- Junction table Book ↔ Author (many-to-many)
+-- Junction table Book ↔ Author (depends on Book + Author, so created last)
 CREATE TABLE BookAuthor (
   BookID INT,
   AuthorID INT,
@@ -64,25 +78,19 @@ CREATE TABLE BookAuthor (
 -- --------------------------------------------------
 -- STEP 3: Insert the data
 -- --------------------------------------------------
-
--- Publisher
 INSERT INTO Publisher (PublisherName) VALUES ('Wrox');
 SET @pubID = LAST_INSERT_ID();
 
--- Language
 INSERT INTO Language (LanguageName) VALUES ('English');
 SET @langID = LAST_INSERT_ID();
 
--- Book
 INSERT INTO Book (Title, PublisherID, LanguageID)
 VALUES ('Professional C#', @pubID, @langID);
 SET @bookID = LAST_INSERT_ID();
 
--- Address
 INSERT INTO Address (City, Country) VALUES ('San Francisco', 'USA');
 SET @addrID = LAST_INSERT_ID();
 
--- Authors
 INSERT INTO Author (FirstName, LastName, BirthDate, AddressID)
 VALUES ('Christian','Nagel','1970-12-24', @addrID);
 SET @a1 = LAST_INSERT_ID();
@@ -95,7 +103,6 @@ INSERT INTO Author (FirstName, LastName, BirthDate, AddressID)
 VALUES ('Jay','Glynn','1975-01-24', @addrID);
 SET @a3 = LAST_INSERT_ID();
 
--- Link authors to book
 INSERT INTO BookAuthor (BookID, AuthorID) VALUES
 (@bookID, @a1),
 (@bookID, @a2),
@@ -123,7 +130,7 @@ ORDER BY b.Title, a.LastName;
 -- Professional C#  | Bill Evjen       | Wrox      | English
 -- Professional C#  | Christian Nagel  | Wrox      | English
 -- Professional C#  | Jay Glynn        | Wrox      | English
-
+--
 -- What if we forgot the BookAuthor join?
 -- Then each book would only link to ONE publisher and ONE language,
 -- but we would LOSE the many-to-many connection to multiple authors.
@@ -140,21 +147,11 @@ DELETE FROM Author WHERE FirstName = 'Bill' AND LastName = 'Evjen';
 -- --------------------------------------------------
 -- STEP 6–8: ALTER TABLE examples
 -- --------------------------------------------------
-
--- Add pubdate to Book
-ALTER TABLE Book ADD pubdate DATE;
-
--- Add preferred_language to Author
-ALTER TABLE Author ADD preferred_language VARCHAR(50);
-
--- Set default value
-ALTER TABLE Author ALTER preferred_language SET DEFAULT 'English';
-
--- Rename column
-ALTER TABLE Author CHANGE preferred_language lang_pref VARCHAR(50);
-
--- Change datatype + default
-ALTER TABLE Author MODIFY lang_pref VARCHAR(2) DEFAULT 'EN';
+ALTER TABLE Book ADD pubdate DATE;                                -- add new column
+ALTER TABLE Author ADD preferred_language VARCHAR(50);            -- add column
+ALTER TABLE Author ALTER preferred_language SET DEFAULT 'English';-- set default
+ALTER TABLE Author CHANGE preferred_language lang_pref VARCHAR(50);-- rename
+ALTER TABLE Author MODIFY lang_pref VARCHAR(2) DEFAULT 'EN';      -- adjust type
 
 -- --------------------------------------------------
 -- STEP 9: Drop Publisher
