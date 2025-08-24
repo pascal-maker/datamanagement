@@ -1,0 +1,99 @@
+-- --------------------------------------------------
+-- STEP 1: Create the database and select it
+-- --------------------------------------------------
+CREATE DATABASE SportsClub;   -- create the database
+USE SportsClub;               -- select it so all tables are created here
+
+-- --------------------------------------------------
+-- STEP 2: Create the tables
+-- --------------------------------------------------
+
+-- Members table: stores information about each member
+CREATE TABLE Members (
+  MemberID INT PRIMARY KEY AUTO_INCREMENT,    -- unique ID for each member
+  MembershipNumber VARCHAR(10),               -- membership number (e.g. M001)
+  Name VARCHAR(100),                          -- full name of the member
+  Address VARCHAR(100),
+  Zipcode VARCHAR(10),                        -- VARCHAR so leading 0’s are not lost
+  City VARCHAR(100),
+  PhoneNumber VARCHAR(20)                     -- VARCHAR so prefixes like +32 work
+);
+
+-- Disciplines table: stores each type of running discipline and records
+CREATE TABLE Disciplines(
+  DisciplineID INT PRIMARY KEY AUTO_INCREMENT,
+  Distance INT,                               -- numeric distance (100, 200, 42195 etc.)
+  Type VARCHAR(100),                          -- sprint, marathon, etc.
+  WorldRecord TIME(2),                        -- world record time (hh:mm:ss.ss)
+  EuropeanRecord TIME(2),                     -- european record time
+  BelgianRecord TIME(2)                       -- belgian record time
+);
+
+-- Results table: junction table between Members and Disciplines
+CREATE TABLE Results(
+  MemberID INT NOT NULL,                      -- FK → Members
+  DisciplineID INT NOT NULL,                  -- FK → Disciplines
+  Date DATETIME DEFAULT CURRENT_TIMESTAMP,    -- date of performance; default = NOW
+  Location VARCHAR(200),                      -- where the result was achieved
+  AchievedTime TIME(2),                       -- performance time (hh:mm:ss.ss)
+
+  -- Composite primary key:
+  --   A member can run the same discipline many times → we need Date to separate them.
+  --   Example: Member 1 can run 100m on June 1 and June 10 → both should be stored.
+  PRIMARY KEY(MemberID, DisciplineID, Date),
+
+  -- Foreign keys ensure referential integrity
+  FOREIGN KEY(MemberID) REFERENCES Members(MemberID),
+  FOREIGN KEY(DisciplineID) REFERENCES Disciplines(DisciplineID)
+);
+
+-- --------------------------------------------------
+-- STEP 3: Insert sample data
+-- --------------------------------------------------
+
+-- Members
+INSERT INTO Members (Name, Address, Zipcode, City, PhoneNumber) 
+VALUES ('Emma Jones', '123 Maple St', '90001', 'Ghent', '0493123456');
+
+INSERT INTO Members (Name, Address, Zipcode, City, PhoneNumber) 
+VALUES ('Liam Smith', '456 Oak St', '90002', 'Bruges', '0493765432');
+
+-- Disciplines
+-- ⚠ TIME must be inserted in hh:mm:ss or hh:mm:ss.xx format
+-- Sprint world record = 9.63 seconds → insert as '00:00:09.63'
+INSERT INTO Disciplines (Distance, Type, WorldRecord, EuropeanRecord, BelgianRecord) 
+VALUES (100, 'Sprint', '00:00:09.63', '00:00:09.80', '00:00:11.04');
+
+-- Marathon world record = 2 hours 0 min 35 sec → '02:00:35'
+INSERT INTO Disciplines (Distance, Type, WorldRecord, EuropeanRecord, BelgianRecord) 
+VALUES (42195, 'Marathon', '02:00:35', '02:03:35', '02:03:35');
+
+-- Results
+-- AchievedTime is stored as TIME → sprint 15.12 sec = '00:00:15.12'
+INSERT INTO Results (MemberID, DisciplineID, Date, Location, AchievedTime)
+VALUES (1, 1, '2023-06-21 00:00:00', 'Brussels King Baudouin Stadium', '00:00:15.12');
+
+-- Marathon time → '03:36:12'
+INSERT INTO Results (MemberID, DisciplineID, Date, Location, AchievedTime)
+VALUES (2, 2, '2023-04-13 00:00:00', 'Brussels Marathon', '03:36:12');
+
+-- --------------------------------------------------
+-- Notes & Explanations
+-- --------------------------------------------------
+-- 1. Composite primary key (MemberID, DisciplineID, Date):
+--    - Without Date, you couldn’t store multiple results for the same member & discipline.
+--    - Example: Emma runs 100m on June 21 and July 1 → both need to be in the table.
+
+-- 2. TIME(2):
+--    - TIME datatype supports hh:mm:ss and can include fractional seconds.
+--    - '00:00:09.63' = 9.63 seconds (good for sprints).
+--    - '03:36:12' = 3 hours, 36 minutes, 12 seconds (good for marathons).
+
+-- 3. Foreign keys:
+--    - Ensure that Results.MemberID must exist in Members.
+--    - Ensure that Results.DisciplineID must exist in Disciplines.
+--    - If you try to insert with MemberID=99 (non-existing), MySQL will reject it.
+
+-- 4. Inserts:
+--    - You must provide MemberID and DisciplineID, because Results links those two tables.
+--    - MySQL auto-increments IDs in Members and Disciplines, so IDs start at 1.
