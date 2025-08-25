@@ -1,0 +1,122 @@
+Top idee 🙌 een **README.md** is ideaal om je leerkracht te tonen hoe je de oefening hebt aangepakt.
+Hier is een kant-en-klare versie die je kan gebruiken of aanpassen:
+
+---
+
+# 📘 Oefening 2.4 – JSON file migration: Partago Ghent
+
+## 🎯 Opdracht
+
+We werken met een JSON-bestand (`partago.json`) dat gegevens bevat over **deelauto’s van Partago** (locaties, modellen, merken, enz.).
+De bedoeling is:
+
+1. JSON inladen in een **MySQL database** via *Table Data Import Wizard*.
+2. Controleren dat de data correct in een tabel staat.
+3. Views maken:
+
+   * **CarsPerModel** → aantal auto’s per merk en model.
+   * **LocationsInRange** → auto’s die zich bevinden tussen bepaalde geo-coördinaten.
+4. De database exporteren als `dump_partago.sql`.
+
+---
+
+## 🛠️ Stappenplan
+
+### 1. Database en tabel maken
+
+* Open **MySQL Workbench**.
+* Maak een nieuwe database aan:
+
+```sql
+CREATE DATABASE Partago;
+USE Partago;
+```
+
+* Gebruik daarna **Table Data Import Wizard** om `partago.json` te importeren.
+* Dit maakt automatisch een tabel `partago` waarin elke rij een **JSON-object** bevat met o.a.:
+
+  * `geoPosition` (latitude + longitude)
+  * `displayName` (station naam)
+  * `vehicleInformation` (brand, model, fuelType, transmission)
+  * `stationType`
+
+---
+
+### 2. Controleren van data
+
+Voer dit uit om te checken of alles correct is geïmporteerd:
+
+```sql
+SELECT 
+  displayName,
+  JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.latitude')) AS latitude,
+  JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.longitude')) AS longitude,
+  JSON_UNQUOTE(JSON_EXTRACT(vehicleInformation,'$.brand')) AS brand,
+  JSON_UNQUOTE(JSON_EXTRACT(vehicleInformation,'$.model')) AS model
+FROM partago
+LIMIT 10;
+```
+
+---
+
+### 3. Views maken
+
+#### 📌 Exercise 1 – Aantal auto’s per model
+
+```sql
+CREATE OR REPLACE VIEW CarsPerModel AS
+SELECT
+  JSON_UNQUOTE(JSON_EXTRACT(vehicleInformation,'$.brand')) AS brand,
+  JSON_UNQUOTE(JSON_EXTRACT(vehicleInformation,'$.model')) AS model,
+  COUNT(*) AS `Number of cars`
+FROM partago
+GROUP BY brand, model;
+```
+
+👉 Resultaat: overzicht aantal auto’s per merk/model.
+
+---
+
+#### 📌 Exercise 2 – Auto’s in bepaalde geo-range
+
+We willen auto’s tonen met:
+
+* **latitude > 51.1**
+* **longitude < 4.46**
+
+```sql
+CREATE OR REPLACE VIEW LocationsInRange AS
+SELECT 
+  JSON_UNQUOTE(JSON_EXTRACT(vehicleInformation,'$.model')) AS model,
+  CAST(JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.latitude')) AS DECIMAL(10,6)) AS latitude,
+  CAST(JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.longitude')) AS DECIMAL(10,6)) AS longitude
+FROM partago
+WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.latitude')) AS DECIMAL(10,6)) > 51.1
+  AND CAST(JSON_UNQUOTE(JSON_EXTRACT(geoPosition,'$.longitude')) AS DECIMAL(10,6)) < 4.46;
+```
+
+👉 Resultaat: lijst van auto’s in de opgegeven coördinaten.
+
+---
+
+### 4. Exporteren
+
+* Ga in MySQL Workbench naar **Server → Data Export**.
+* Selecteer database **Partago**.
+* Kies **Dump Structure and Data**.
+* Exporteer naar bestand **`dump_partago.sql`**.
+
+---
+
+## 📦 Inleveren
+
+1. **dump\_partago.sql** → export van database met data en views.
+2. Screenshots van je resultaten (optioneel).
+
+---
+
+✅ Klaar! Hiermee toon je stap-voor-stap dat je de JSON correct hebt geïmporteerd, omgezet in SQL views en geëxporteerd.
+
+---
+
+Wil je dat ik voor **Oefening 2.3 (rooms.json)** ook een kant-en-klare README in dezelfde stijl schrijf, zodat beide samen 100% consistent zijn?
