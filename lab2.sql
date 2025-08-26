@@ -98,30 +98,45 @@ WHERE ProductName REGEXP '^chef' AND ProductName REGEXP 'mix$';
 -- ➝ Zoekt producten waarvan de naam begint met "chef" en eindigt op "mix".
 
 #Exercise17
+-- Kies de kolom met productnamen
 SELECT ProductName
+-- Uit de tabel met producten
 FROM tblproducts
+-- Filter: case-sensitive (utf8mb4_bin) regexp die een kleine 'c' ergens in de naam zoekt
 WHERE ProductName COLLATE utf8mb4_bin REGEXP 'c'
+-- Sorteer alfabetisch op productnaam
 ORDER BY ProductName;
 -- ➝ Case-sensitive: toont producten met een kleine letter "c" in de naam.
 
 #Exercise18
+-- Kies de kolom met productnamen
 SELECT ProductName
+-- Uit de tabel met producten
 FROM tblproducts
+-- Filter: case-sensitive regexp voor één van drie tekens: 'c', 'y' of hoofdletter 'B'
 WHERE ProductName COLLATE utf8mb4_bin REGEXP 'c'
    OR ProductName COLLATE utf8mb4_bin REGEXP 'y'
    OR ProductName COLLATE utf8mb4_bin REGEXP 'B'
+-- Sorteer alfabetisch op productnaam
 ORDER BY ProductName;
 -- ➝ Case-sensitive: toont producten die 'c', 'y' of 'B' bevatten.
 
 #Exercise19
+-- Toon zowel het saldo als de naam, zodat de context duidelijk is
 SELECT Balance, Name
+-- Uit de klantentabel
 FROM tblcustomers
+-- Filter: behandelt Balance als tekst (collatie) en matcht exact 4 niet-spatie tekens
+-- Opmerking: dit test de TEXTUELE lengte van Balance, niet de numerieke waarde
 WHERE Balance COLLATE utf8mb4_bin REGEXP '^[^\s]{4}$';
 -- ➝ Klanten waarvan Balance exact 4 tekens lang is (zonder spaties).
 
 #Exercise20
+-- Selecteer het belastingpercentage
 SELECT TaxPercentage
+-- Uit de btw-tabel
 FROM tbltaxrate
+-- Filter: tekstpatroon '0.xx' met exact twee cijfers na de punt
 WHERE TaxPercentage COLLATE utf8mb4_bin REGEXP '^0\\.[0-9]{2}$';
 -- ➝ Toont belastingpercentages in de vorm 0.xx (bvb. 0.05).
 
