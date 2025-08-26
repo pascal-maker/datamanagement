@@ -12,10 +12,11 @@ ORDER BY LastName ASC;
 -- ➝ Toont de achternaam, voornaam en of de werknemer een bedrijfswagen heeft (Car=1).
 
 #Exercise02
-SELECT CustomerNumber, ShippingCost,
-       IFNULL(DeliveryDate, 'Has not been delivered yet') AS DeliveryStatus
-FROM tblorders;
--- ➝ Laat orders zien: klantnummer, verzendkost en de leverdatum. Als de leverdatum NULL is,
+SELECT 
+  CustomerNumber,
+  IF(DeliveryDate IS NULL, 'Not been delivered yet', DeliveryDate) AS DeliveryDate,
+  IF(DeliveryDate IS NULL, 'Not been delivered yet', ShippingCost) AS ShippingCost
+FROM tblOrders;
 --   verschijnt er "Has not been delivered yet".
 
 #Exercise03
@@ -96,6 +97,18 @@ GROUP BY CategoryNumber, SupplierNumber
 HAVING SUM(Stock*PricePerUnit) > 1000;
 -- ➝ Zelfde als Exercise10, maar filtert categorieën met voorraadwaarde > 1000.
 
+# Toon de gemiddelde levertijd per jaar
+SELECT 
+    YEAR(DeliveryDate) AS Year,   # Haal het jaartal uit de leverdatum
+    CONCAT(
+        ROUND(AVG(DATEDIFF(DeliveryDate, OrderDate)), 0),  # Bereken gemiddelde levertijd in dagen, afgerond
+        ' days'                                            # Voeg de tekst "days" toe voor leesbaarheid
+    ) AS AverageDeliveryTime
+FROM tblorders
+GROUP BY YEAR(DeliveryDate)    # Groepeer alle orders per leverjaar
+ORDER BY Year;                 # Sorteer chronologisch per jaar
+
+
 #Exercise12
 SELECT YEAR(DeliveryDate) AS Year,
        CONCAT(ROUND(AVG(DATEDIFF(DeliveryDate, OrderDate)), 0), ' days') AS AverageDeliveryTime
@@ -128,9 +141,8 @@ WHERE Color IS NOT NULL
 -- ➝ Toont aantal producten en gemiddelde maat (numeriek), excl. standaard maten.
 
 #Exercise16
-SELECT CONCAT_WS(' ', FirstName, MiddleName, LastName) AS FullName
-FROM Person
-WHERE LastName REGEXP '^[VW]'
+SELECT FirstName,MiddleName,
+LastName from Person WHERE LastName REGEXP  '^V' OR  LastName REGEXP'^W'
 ORDER BY LastName DESC;
 -- ➝ Toont namen van personen waarvan achternaam begint met V of W.
 
@@ -148,14 +160,22 @@ WHERE FirstName = REVERSE(FirstName);
 -- ➝ Zoekt palindroom voornamen (bvb. "Anna", "Bob").
 
 #Exercise19
-SELECT SUBSTRING(EmailAddress, LOCATE('@',EmailAddress) + 1) AS DomainName
+SELECT LOCATE("@",EmailAddress)   FROM ProductReview;
+SELECT SUBSTRING(EmailAddress,Locate('@',EmailAddress) + 1 )AS DomainName FROM ProductReview;
+# Stap 1: Vind de positie van het @-teken in het e-mailadres
+SELECT LOCATE('@', EmailAddress) 
 FROM ProductReview;
+# Voorbeeld: 'john.doe@gmail.com' → resultaat = 9
+
+# Stap 2: Pak alles NA het @-teken
+SELECT SUBSTRING(EmailAddress, LOCATE('@', EmailAddress) + 1) AS DomainName
+FROM ProductReview;
+# Voorbeeld: 'john.doe@gmail.com' → resultaat = 'gmail.com'
+
+
 -- ➝ Haalt domeinnaam uit e-mailadres.
 
-#Exercise19 (alternatief)
-SELECT SUBSTRING_INDEX(EmailAddress, '@', -1) AS DomainName
-FROM ProductReview;
--- ➝ Alternatieve manier: alles rechts van het @-teken.
+
 
 #Exercise20
 SELECT DISTINCT Jobtitle
@@ -170,12 +190,11 @@ WHERE FirstName LIKE '%K%';
 -- ➝ Toont alle voornamen die een K bevatten.
 
 #Exercise22
-SELECT SalesPersonID,
-       AVG(TotalDue) AS AverageOrderValue
-FROM SalesOrderHeader
-WHERE SalesPersonId IS NOT NULL
-GROUP BY SalesPersonID
-HAVING COUNT(SalesOrderID) > 50;
+SELECT count(SalesOrderID) as Orders, SalesPersonID, AVG(TotalDue) 
+AS AvgOrderValue from salesorderheader
+GROUP BY SalesPersonID 
+HAVING Orders > 50
+ ORDER BY SalesPersonID ASC;
 -- ➝ Gemiddelde orderwaarde per verkoper met minstens 50 orders.
 
 #Exercise23
@@ -196,10 +215,8 @@ ORDER BY Maand;
 -- ➝ Telt aantal orders per maand.
 
 #Exercise25
-SELECT CustomerID,
-       YEAR(OrderDate) AS Jaar,
-       SUM(TotalDue) AS TotalOrder
-FROM SalesOrderHeader
-GROUP BY CustomerID, YEAR(OrderDate)
-ORDER BY CustomerID;
+#Exercise25
+SELECT CustomerID,YEAR(OrderDate) ,  sum(TotalDue) AS 'Total Amount' from salesorderheader
+GROUP BY CustomerID ,YEAR(OrderDate)
+ORDER By CustomerID ASC;
 -- ➝ Toont per klant en per jaar de totale bestelwaarde.
