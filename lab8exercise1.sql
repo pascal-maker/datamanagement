@@ -1,170 +1,109 @@
--- --------------------------------------------------
--- STEP 1: Create the database and select it
--- --------------------------------------------------
+ DROP DATABASE IF EXISTS  mylibrary;
+
 CREATE DATABASE mylibrary;
 USE mylibrary;
+CREATE TABLE authors(
+auno INT PRIMARY KEY AUTO_INCREMENT,
+firstname VARCHAR(100),
+lastname VARCHAR(100),
+city VARCHAR(100),
+country VARCHAR(100),
+birthdate date
 
--- --------------------------------------------------
--- STEP 2: Create tables in correct order
--- --------------------------------------------------
--- ⚡ Why does order matter?
--- Parent tables (those referenced by foreign keys) must be created first.
--- Otherwise MySQL will throw: "Error Code: 1215. Cannot add foreign key constraint".
--- So we build in a logical dependency chain:
---   Publisher   → Book ← Language
---   Address     → Author
---   Book + Author → BookAuthor
--- Correct order:
--- 1. Publisher
--- 2. Language
--- 3. Book
--- 4. Address
--- 5. Author
--- 6. BookAuthor
 
--- Publisher table
-CREATE TABLE Publisher (
-  PublisherID INT AUTO_INCREMENT PRIMARY KEY,  -- unique ID for each publisher
-  PublisherName VARCHAR(100) NOT NULL          -- publisher name
 );
 
--- Language table
-CREATE TABLE Language (
-  LanguageID INT AUTO_INCREMENT PRIMARY KEY,   -- unique ID for each language
-  LanguageName VARCHAR(50) NOT NULL            -- e.g. English, Dutch
+CREATE TABLE publishers(
+pubno INT PRIMARY KEY AUTO_INCREMENT,
+pubname VARCHAR(100),
+pubcity VARCHAR(100),
+pubcountry VARCHAR(100) 
 );
 
--- Book table (depends on Publisher + Language, so created after them)
-CREATE TABLE Book (
-  BookID INT AUTO_INCREMENT PRIMARY KEY,       -- unique ID for each book
-  Title VARCHAR(200) NOT NULL,                 -- title of the book
-  PublisherID INT,                             -- FK → Publisher
-  LanguageID INT,                              -- FK → Language
-  FOREIGN KEY (PublisherID) REFERENCES Publisher(PublisherID)
-    ON DELETE RESTRICT ON UPDATE RESTRICT,     -- cannot delete/update Publisher if Book still references it
-  FOREIGN KEY (LanguageID) REFERENCES Language(LanguageID)
-    ON DELETE RESTRICT ON UPDATE RESTRICT
+
+
+
+CREATE TABLE books(
+bookno INT PRIMARY KEY AUTO_INCREMENT,
+title VARCHAR(100),
+subtitle VARCHAR(100),
+language VARCHAR(100),
+pubno INT,
+FOREIGN KEY (pubno) REFERENCES publishers(pubno)
+
 );
 
--- Address table (independent, needed before Author)
-CREATE TABLE Address (
-  AddressID INT AUTO_INCREMENT PRIMARY KEY,    -- unique ID
-  City VARCHAR(100),
-  Country VARCHAR(100)
+CREATE TABLE booksauthors(
+bookno INT,
+auno INT,
+PRIMARY KEY (bookno,auno),
+FOREIGN KEY (bookno) REFERENCES books(bookno),
+FOREIGN KEY (auno) REFERENCES authors(auno)
+
+
 );
 
--- Author table (depends on Address)
-CREATE TABLE Author (
-  AuthorID INT AUTO_INCREMENT PRIMARY KEY,
-  FirstName VARCHAR(100),
-  LastName VARCHAR(100),
-  BirthDate DATE,
-  AddressID INT,
-  FOREIGN KEY (AddressID) REFERENCES Address(AddressID)
-    ON DELETE RESTRICT ON UPDATE RESTRICT
+
+CREATE TABLE editions(
+edno INT PRIMARY KEY AUTO_INCREMENT,
+bookno INT,
+month TINYINT CHECK (month BETWEEN  1 AND 12),
+ year YEAR ,
+
+FOREIGN KEY (bookno) REFERENCES books(bookno)
+
+
 );
 
--- Junction table Book ↔ Author (depends on Book + Author, so created last)
-CREATE TABLE BookAuthor (
-  BookID INT,
-  AuthorID INT,
-  PRIMARY KEY (BookID, AuthorID),              -- composite key
-  FOREIGN KEY (BookID) REFERENCES Book(BookID)
-    ON DELETE CASCADE ON UPDATE CASCADE,       -- if book is deleted, links are removed
-  FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID)
-    ON DELETE CASCADE ON UPDATE CASCADE
-);
 
--- --------------------------------------------------
--- STEP 3: Insert the data
--- --------------------------------------------------
-INSERT INTO Publisher (PublisherName) VALUES ('Wrox');
-SET @pubID = LAST_INSERT_ID();
+INSERT INTO publishers(pubname,pubcity,pubcountry)
+VALUES('Wrox','San Fransisco','USA');
+set @pub_id = LAST_INSERT_ID();
 
-INSERT INTO Language (LanguageName) VALUES ('English');
-SET @langID = LAST_INSERT_ID();
+INSERT INTO books(title,subtitle,language,pubno)
+VALUES('Professional c#',NULL,'English',@pub_id);
+SET @book_id = LAST_INSERT_ID();
 
-INSERT INTO Book (Title, PublisherID, LanguageID)
-VALUES ('Professional C#', @pubID, @langID);
-SET @bookID = LAST_INSERT_ID();
+ INSERT INTO authors(firstname,lastname,city,country,birthdate)
+VALUES('Christian','Nagel','San Fransisco','USA','1970-12-24');
+set @a1 = LAST_INSERT_ID();
 
-INSERT INTO Address (City, Country) VALUES ('San Francisco', 'USA');
-SET @addrID = LAST_INSERT_ID();
+ INSERT INTO authors(firstname,lastname,city,country,birthdate)
+VALUES('Bill','Evyen','San Fransisco','USA','1980-12-24');
+set @a2 = LAST_INSERT_ID();
 
-INSERT INTO Author (FirstName, LastName, BirthDate, AddressID)
-VALUES ('Christian','Nagel','1970-12-24', @addrID);
-SET @a1 = LAST_INSERT_ID();
+ INSERT INTO authors(firstname,lastname,city,country,birthdate)
+VALUES('Jay','Glynn','San Fransisco','USA','1975-01-24');
+set @a3 = LAST_INSERT_ID();
 
-INSERT INTO Author (FirstName, LastName, BirthDate, AddressID)
-VALUES ('Bill','Evjen','1980-12-20', @addrID);
-SET @a2 = LAST_INSERT_ID();
+INSERT INTO booksauthors (bookno,auno) VALUES(@book_id,@a1);
+INSERT INTO booksauthors (bookno,auno) VALUES(@book_id,@a2);
+INSERT INTO booksauthors (bookno,auno) VALUES(@book_id,@a3);
 
-INSERT INTO Author (FirstName, LastName, BirthDate, AddressID)
-VALUES ('Jay','Glynn','1975-01-24', @addrID);
-SET @a3 = LAST_INSERT_ID();
 
-INSERT INTO BookAuthor (BookID, AuthorID) VALUES
-(@bookID, @a1),
-(@bookID, @a2),
-(@bookID, @a3);
+#exercise3
+SELECT b.title,a.firstname,a.lastname
+FROM books b
+JOIN booksauthors ba  on b.bookno = ba.bookno
+JOIN authors a on ba.auno = a.auno;
 
--- --------------------------------------------------
--- STEP 4: Overview query (Books + Authors + Publisher + Language)
--- --------------------------------------------------
-SELECT b.Title,
-       CONCAT(a.FirstName, ' ', a.LastName) AS Author,
-       p.PublisherName,
-       l.LanguageName
-FROM Book b
-JOIN BookAuthor ba ON b.BookID = ba.BookID   -- connects books to authors
-JOIN Author a ON ba.AuthorID = a.AuthorID    -- fetches author names
-JOIN Publisher p ON b.PublisherID = p.PublisherID
-JOIN Language l ON b.LanguageID = l.LanguageID
-ORDER BY b.Title, a.LastName;
+#Exercise4
+DELETE FROM authors WHERE firstname = 'bill' AND lastname = 'Evjen';
 
--- EXPLANATION:
--- This query produces the required "overview of the books with the authors
--- and the publisher’s details, sorted by book and author."
--- Example output:
--- Title            | Author           | Publisher | Language
--- Professional C#  | Bill Evjen       | Wrox      | English
--- Professional C#  | Christian Nagel  | Wrox      | English
--- Professional C#  | Jay Glynn        | Wrox      | English
---
--- What if we forgot the BookAuthor join?
--- Then each book would only link to ONE publisher and ONE language,
--- but we would LOSE the many-to-many connection to multiple authors.
--- Result would only show books once, without authors.
--- => That’s why BookAuthor is crucial.
+#Exercise05
+ALTER TABLE books add pubdate DATE ;
+ALTER TABLE authors add preferred_language VARCHAR(50);
+#Exerise06
+ALTER TABLE authors
+MODIFY preferred_language VARCHAR(50) DEFAULT 'English';
 
--- --------------------------------------------------
--- STEP 5: Try deleting an Author
--- --------------------------------------------------
-DELETE FROM Author WHERE FirstName = 'Bill' AND LastName = 'Evjen';
--- Observation: If BookAuthor has ON DELETE CASCADE → Bill’s link to the book is removed automatically.
--- If ON DELETE RESTRICT → the delete fails, because Author is still referenced in BookAuthor.
+#Exercise07
+ALTER TABLE authors
+CHANGE preferred_language lang_pref VARCHAR(50) DEFAULT 'English';
 
--- --------------------------------------------------
--- STEP 6–8: ALTER TABLE examples
--- --------------------------------------------------
-ALTER TABLE Book ADD pubdate DATE;                                -- add new column
-ALTER TABLE Author ADD preferred_language VARCHAR(50);            -- add column
-ALTER TABLE Author ALTER preferred_language SET DEFAULT 'English';-- set default
-ALTER TABLE Author CHANGE preferred_language lang_pref VARCHAR(50);-- rename
-ALTER TABLE Author MODIFY lang_pref VARCHAR(2) DEFAULT 'EN';      -- adjust type
+#Exercise08
+ALTER TABLE authors
+MODIFY lang_pref  VARCHAR(2) DEFAULT 'EN';
 
--- --------------------------------------------------
--- STEP 9: Drop Publisher
--- --------------------------------------------------
-DROP TABLE Publisher;
--- Observation: This fails because Book still references Publisher.
--- To drop Publisher, first drop Book or remove the foreign key.
-
--- --------------------------------------------------
--- STEP 10: Reverse Engineer to EERD
--- --------------------------------------------------
--- In MySQL Workbench:
--- Database → Reverse Engineer
--- Select schema = mylibrary
--- Select all tables → Execute
--- Workbench generates an EER Diagram with relationships
+#Exercise09
+DROP TABLE publishers;
